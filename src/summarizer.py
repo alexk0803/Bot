@@ -1,4 +1,4 @@
-"""Gemini API를 사용하여 기사 내용을 한��어로 요약."""
+"""Gemini API를 사용하여 기사 내용을 한국어로 요약."""
 
 import re
 import requests
@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from config import GEMINI_API_KEY, SUMMARY_MAX_CHARS
 
 try:
-    import google.generativeai as genai
+    from google import genai
     HAS_GEMINI = True
 except ImportError:
     HAS_GEMINI = False
@@ -16,15 +16,14 @@ def _init_gemini():
     """Gemini 클라이언트를 초기화."""
     if not HAS_GEMINI or not GEMINI_API_KEY:
         return None
-    genai.configure(api_key=GEMINI_API_KEY)
-    return genai.GenerativeModel("gemini-2.0-flash")
+    return genai.Client(api_key=GEMINI_API_KEY)
 
 
-_model = _init_gemini()
+_client = _init_gemini()
 
 
 def fetch_article_text(url):
-    """URL에서 기사 본문 텍스트�� 추출."""
+    """URL에서 기사 본문 텍스트를 추출."""
     if not url:
         return ""
     try:
@@ -49,14 +48,14 @@ def fetch_article_text(url):
             if len(text) > 30:
                 text_parts.append(text)
 
-        return " ".join(text_parts)[:3000]  # Gemini에 보낼 최대 길이 제한
+        return " ".join(text_parts)[:3000]
     except Exception:
         return ""
 
 
 def summarize_with_gemini(text, title=""):
     """Gemini API로 한국어 3줄 요약을 생성."""
-    if not _model or not text:
+    if not _client or not text:
         return None
 
     prompt = (
@@ -71,7 +70,10 @@ def summarize_with_gemini(text, title=""):
     )
 
     try:
-        response = _model.generate_content(prompt)
+        response = _client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
+        )
         return response.text.strip()
     except Exception as e:
         print(f"  [Gemini 요약 실패] {e}")
@@ -101,10 +103,8 @@ def get_summary(url, title=""):
     if not text:
         return "요약을 가져올 수 없습니다."
 
-    # Gemini로 요약 시도
     gemini_result = summarize_with_gemini(text, title)
     if gemini_result:
         return gemini_result
 
-    # 폴백: 텍스트 앞부분 추출
     return fallback_summary(text)
