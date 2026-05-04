@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 from config import HF_API_TOKEN, SUMMARY_MAX_CHARS
 
-HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
+HF_API_URL = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-cnn"
 
 
 def fetch_article_text(url):
