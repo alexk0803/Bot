@@ -12,6 +12,9 @@ AI 관련 뉴스와 GitHub 트렌딩 레포를 Discord로 알려주는 봇입니
 
 - GitHub 계정
 - Discord 서버 (관리자 권한 필요)
+- Google Gemini API 키 (무료) — 뉴스 한국어 요약에 사용
+  - https://aistudio.google.com/apikey 에서 발급
+  - Gemini API 키가 없어도 봇은 동작합니다 (텍스트 추출 방식으로 자동 폴백)
 
 ---
 
@@ -44,16 +47,17 @@ git commit -m "Add AI news bot"
 git push -u origin main
 ```
 
-### 3-2. Webhook URL을 Secret으로 등록
+### 3-2. Secret 등록
 
 1. GitHub에서 레포 페이지 접속
 2. 상단 탭에서 **Settings** 클릭
 3. 왼쪽 메뉴에서 **Secrets and variables** → **Actions** 클릭
-4. **New repository secret** 버튼 클릭
-5. 다음과 같이 입력:
-   - **Name**: `DISCORD_WEBHOOK_URL`
-   - **Secret**: 2단계에서 복사한 웹후크 URL 붙여넣기
-6. **Add secret** 클릭
+4. **New repository secret** 버튼으로 아래 2개를 각각 등록:
+
+| Name | Secret | 설명 |
+|---|---|---|
+| `DISCORD_WEBHOOK_URL` | 2단계에서 복사한 웹후크 URL | 필수 |
+| `GEMINI_API_KEY` | https://aistudio.google.com/apikey 에서 발급한 키 | 선택 (없으면 텍스트 추출 방식으로 폴백) |
 
 ---
 
@@ -86,6 +90,7 @@ pip install -r requirements.txt
 
 # 환경변수 설정
 export DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..."
+export GEMINI_API_KEY="your-gemini-api-key"  # 선택사항
 
 # 일일 요약 테스트
 python src/daily_summary.py
@@ -111,7 +116,7 @@ python src/keyword_watch.py
 - **`HN_MIN_SCORE_URGENT`**: 긴급 뉴스로 간주할 HN 점수 (기본: 200)
 - **`WATCH_KEYWORDS`**: 실시간 감시할 키워드 목록 (매칭 시 즉시 알림)
 - **`WATCH_MIN_SCORE`**: 키워드 워치 최소 HN 점수 (기본: 20)
-- **`SUMMARY_MAX_CHARS`**: 뉴스 요약 최대 글자 수 (기본: 200)
+- **`SUMMARY_MAX_CHARS`**: Gemini 사용 불가 시 폴백 요약 최대 글자 수 (기본: 200)
 
 ### 알림 주기 변경
 
@@ -138,3 +143,5 @@ python src/keyword_watch.py
 | Actions가 실행되지 않음 | 레포에 `.github/workflows/` 파일이 push되었는지 확인. Actions 탭에서 워크플로우가 활성화되어 있는지 확인 |
 | "AI 뉴스 0건" | 일시적으로 AI 관련 뉴스가 HN 상위에 없는 경우. `config.py`에서 `HN_MIN_SCORE_DAILY`를 낮추면 더 많이 수집 |
 | 오탐 (AI 무관 뉴스 수신) | `config.py`의 `AI_KEYWORDS`에서 너무 짧거나 범용적인 키워드 제거 |
+| 요약이 "요약을 가져올 수 없습니다"로 표시 | `GEMINI_API_KEY`가 Secret에 등록되었는지 확인. 일부 사이트는 스크래핑이 차단될 수 있음 |
+| 키워드 알림이 안 옴 | `config.py`의 `WATCH_KEYWORDS`에 원하는 키워드가 포함되어 있는지 확인 |
