@@ -1,25 +1,11 @@
-"""Gemini API를 사용하여 기사 내용을 한국어로 요약."""
+"""Hugging Face API를 사용하여 기사 내용을 요약."""
 
 import re
 import requests
 from bs4 import BeautifulSoup
-from config import GEMINI_API_KEY, SUMMARY_MAX_CHARS
+from config import HF_API_TOKEN, SUMMARY_MAX_CHARS
 
-try:
-    from google import genai
-    HAS_GEMINI = True
-except ImportError:
-    HAS_GEMINI = False
-
-
-def _init_gemini():
-    """Gemini 클라이언트를 초기화."""
-    if not HAS_GEMINI or not GEMINI_API_KEY:
-        return None
-    return genai.Client(api_key=GEMINI_API_KEY)
-
-
-_client = _init_gemini()
+HF_API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
 
 
 def fetch_article_text(url):
@@ -48,40 +34,36 @@ def fetch_article_text(url):
             if len(text) > 30:
                 text_parts.append(text)
 
-        return " ".join(text_parts)[:3000]
+        return " ".join(text_parts)[:1024]  # BART 입력 제한
     except Exception:
         return ""
 
 
-def summarize_with_gemini(text, title=""):
-    """Gemini API로 한국어 3줄 요약을 생성."""
-    if not _client or not text:
+def summarize_with_hf(text):
+    """Hugging Face Inference API로 영어 요약을 생성."""
+    if not HF_API_TOKEN or not text:
         return None
 
-    prompt = (
-        "다음 뉴스 기사를 한국어로 요약해줘.\n"
-        "규칙:\n"
-        "- 핵심 내용을 3줄 이내의 bullet point로 정리\n"
-        "- 각 줄은 '- '로 시작\n"
-        "- 전문 용어는 원문 그대로 유지\n"
-        "- 불필요한 서론 없이 바로 요약\n\n"
-        f"제목: {title}\n\n"
-        f"본문:\n{text}"
-    )
+    headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
+    payload = {
+        "inputs": text,
+        "parameters": {"max_length": 130, "min_length": 30},
+    }
 
     try:
-        response = _client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=prompt,
-        )
-        return response.text.strip()
+        resp = requests.post(HF_API_URL, headers=headers, json=payload, timeout=30)
+        resp.raise_for_status()
+        result = resp.json()
+        if isinstance(result, list) and result:
+            return result[0].get("summary_text", "").strip()
+        return None
     except Exception as e:
-        print(f"  [Gemini 요약 실패] {e}")
+        print(f"  [HF 요약 실패] {e}")
         return None
 
 
 def fallback_summary(text, max_chars=SUMMARY_MAX_CHARS):
-    """Gemini 사용 불가 시 앞부분 추출 방식으로 폴백."""
+    """HF 사용 불가 시 앞부분 추출 방식으로 폴백."""
     if not text:
         return "요약을 가져올 수 없습니다."
 
@@ -98,13 +80,13 @@ def fallback_summary(text, max_chars=SUMMARY_MAX_CHARS):
 
 
 def get_summary(url, title=""):
-    """URL에서 기사를 가져와 요약을 반환. Gemini 우선, 실패 시 폴백."""
+    """URL에서 기사를 가져와 요약을 반환. HF 우선, 실패 시 폴백."""
     text = fetch_article_text(url)
     if not text:
         return "요약을 가져올 수 없습니다."
 
-    gemini_result = summarize_with_gemini(text, title)
-    if gemini_result:
-        return gemini_result
+    hf_result = summarize_with_hf(text)
+    if hf_result:
+        return hf_result
 
     return fallback_summary(text)
