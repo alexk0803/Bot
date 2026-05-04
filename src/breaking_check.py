@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from config import SENT_CACHE_FILE
 from src.news_fetcher import fetch_ai_news
 from src.urgency import is_urgent
+from src.summarizer import get_summary
 from src.discord_sender import send_breaking_alert
 
 
@@ -38,6 +39,7 @@ def main():
             continue
         if is_urgent(item["title"], item["score"]):
             print(f"  [긴급] {item['title']} (score: {item['score']})")
+            item["summary"] = get_summary(item["url"])
             send_breaking_alert(item)
             sent_ids.add(item["id"])
             new_alerts += 1

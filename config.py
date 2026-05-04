@@ -34,5 +34,20 @@ HN_MIN_SCORE_URGENT = 200     # 긴급 뉴스로 간주할 점수
 # GitHub Trending 설정
 GITHUB_TRENDING_URL = "https://github.com/trending"
 
+# 사용자 정의 키워드 워치 (이 키워드가 제목에 포함되면 즉시 알림)
+WATCH_KEYWORDS = [
+    "gpt-5", "gpt5", "claude 4", "claude-4", "gemini 2",
+    "openai", "anthropic", "google deepmind",
+    "sam altman", "dario amodei",
+    "apple ai", "meta ai", "microsoft ai",
+]
+
+# 키워드 워치 HN 최소 점수 (너무 낮은 점수 뉴스 필터링)
+WATCH_MIN_SCORE = 20
+
 # 캐시 파일 경로 (중복 방지용)
 SENT_CACHE_FILE = "sent_ids.json"
+WATCH_CACHE_FILE = "watch_sent_ids.json"
+
+# 요약 설정
+SUMMARY_MAX_CHARS = 200  # 요약 최대 글자 수

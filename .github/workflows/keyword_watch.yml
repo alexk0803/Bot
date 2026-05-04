@@ -1,0 +1,33 @@
+name: Keyword Watch
+
+on:
+  schedule:
+    # 매 10분마다 실행
+    - cron: "*/10 * * * *"
+  workflow_dispatch: # 수동 실행 가능
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 이전에 전송한 뉴스 ID 캐시 복원
+      - name: Restore watch cache
+        uses: actions/cache@v4
+        with:
+          path: watch_sent_ids.json
+          key: watch-ids-${{ github.run_id }}
+          restore-keys: watch-ids-
+
+      - name: Check keyword news
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python src/keyword_watch.py

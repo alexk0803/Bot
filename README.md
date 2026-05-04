@@ -2,8 +2,9 @@
 
 AI 관련 뉴스와 GitHub 트렌딩 레포를 Discord로 알려주는 봇입니다.
 
-- **매일 오전 7시(KST)**: AI 뉴스 + GitHub 트렌딩 요약
+- **매일 오전 7시(KST)**: AI 뉴스 + GitHub 트렌딩 요약 (기사 요약 포함)
 - **매 30분**: 긴급/파급력 큰 뉴스 즉시 알림
+- **매 10분**: 사용자 정의 키워드 워치 알림
 
 ---
 
@@ -61,7 +62,7 @@ git push -u origin main
 ### 4-1. 수동 실행 (처음 테스트)
 
 1. GitHub 레포 → **Actions** 탭 클릭
-2. 왼쪽에서 **AI Daily Summary** 또는 **Breaking AI News Check** 선택
+2. 왼쪽에서 **AI Daily Summary**, **Breaking AI News Check**, 또는 **Keyword Watch** 선택
 3. **Run workflow** 버튼 클릭 → **Run workflow** 확인
 4. 실행 완료 후 Discord 채널에 메시지가 오는지 확인
 
@@ -71,8 +72,9 @@ Push가 완료되면 자동으로 스케줄이 등록됩니다:
 
 | 워크플로우 | 실행 주기 | 설명 |
 |---|---|---|
-| `daily_summary.yml` | 매일 KST 07:00 | AI 뉴스 + GitHub 트렌딩 요약 |
+| `daily_summary.yml` | 매일 KST 07:00 | AI 뉴스 + GitHub 트렌딩 요약 (기사 요약 포함) |
 | `breaking_news.yml` | 매 30분 | 긴급 뉴스 감지 시 즉시 알림 |
+| `keyword_watch.yml` | 매 10분 | 사용자 정의 키워드 매칭 뉴스 즉시 알림 |
 
 > **참고**: GitHub Actions cron은 정확한 시간에 실행되지 않을 수 있습니다 (최대 5~15분 지연 가능).
 
@@ -90,6 +92,9 @@ python src/daily_summary.py
 
 # 긴급 뉴스 체크 테스트
 python src/breaking_check.py
+
+# 키워드 워치 테스트
+python src/keyword_watch.py
 ```
 
 ---
@@ -104,6 +109,9 @@ python src/breaking_check.py
 - **`URGENT_KEYWORDS`**: 긴급 뉴스로 분류하는 키워드 목록
 - **`HN_MIN_SCORE_DAILY`**: 일일 요약에 포함할 최소 HN 점수 (기본: 50)
 - **`HN_MIN_SCORE_URGENT`**: 긴급 뉴스로 간주할 HN 점수 (기본: 200)
+- **`WATCH_KEYWORDS`**: 실시간 감시할 키워드 목록 (매칭 시 즉시 알림)
+- **`WATCH_MIN_SCORE`**: 키워드 워치 최소 HN 점수 (기본: 20)
+- **`SUMMARY_MAX_CHARS`**: 뉴스 요약 최대 글자 수 (기본: 200)
 
 ### 알림 주기 변경
 

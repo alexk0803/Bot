@@ -37,9 +37,12 @@ def send_daily_summary(news_items, trending_repos):
         news_lines = []
         for item in news_items[:15]:
             link = item["url"] or item["hn_url"]
+            summary = item.get("summary", "")
+            summary_line = f"\n  > {summary}" if summary else ""
             news_lines.append(
                 f"**[{item['title']}]({link})**\n"
                 f"  Score: {item['score']} | [HN 댓글]({item['hn_url']})"
+                f"{summary_line}"
             )
         news_text = "\n\n".join(news_lines)
     else:
@@ -79,9 +82,12 @@ def send_breaking_alert(item):
         return
 
     link = item["url"] or item["hn_url"]
+    summary = item.get("summary", "")
+    summary_block = f"\n\n> {summary}" if summary else ""
     description = (
         f"**[{item['title']}]({link})**\n\n"
         f"Score: {item['score']} | [HN 댓글]({item['hn_url']})"
+        f"{summary_block}"
     )
 
     payload = {
@@ -90,6 +96,34 @@ def send_breaking_alert(item):
             "title": "Breaking AI News",
             "description": description,
             "color": 0xE74C3C,  # 빨간색
+        }],
+    }
+    resp = requests.post(DISCORD_WEBHOOK_URL, json=payload, timeout=10)
+    resp.raise_for_status()
+
+
+def send_keyword_alert(item):
+    """키워드 워치 알림을 전송."""
+    if not DISCORD_WEBHOOK_URL:
+        print("[WARNING] DISCORD_WEBHOOK_URL이 설정되지 않았습니다.")
+        return
+
+    link = item["url"] or item["hn_url"]
+    keywords_str = ", ".join(item["matched_keywords"])
+    summary = item.get("summary", "")
+    summary_block = f"\n\n> {summary}" if summary else ""
+
+    description = (
+        f"**[{item['title']}]({link})**\n\n"
+        f"Score: {item['score']} | [HN 댓글]({item['hn_url']})"
+        f"{summary_block}"
+    )
+
+    payload = {
+        "embeds": [{
+            "title": f"Keyword Alert: {keywords_str}",
+            "description": description,
+            "color": 0xF39C12,  # 주황색
         }],
     }
     resp = requests.post(DISCORD_WEBHOOK_URL, json=payload, timeout=10)
