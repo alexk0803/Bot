@@ -39,7 +39,7 @@ def main():
             continue
         if is_urgent(item["title"], item["score"]):
             print(f"  [긴급] {item['title']} (score: {item['score']})")
-            item["summary"] = get_summary(item["url"])
+            item["summary"] = get_summary(item["url"], item["title"])
             send_breaking_alert(item)
             sent_ids.add(item["id"])
             new_alerts += 1

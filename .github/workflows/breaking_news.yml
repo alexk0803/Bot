@@ -30,6 +30,7 @@ jobs:
       - name: Check breaking news
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python src/breaking_check.py
 
       # 캐시 업데이트를 위해 항상 새 키로 저장됨 (run_id 기반)

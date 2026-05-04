@@ -1,6 +1,7 @@
 import os
 
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
 # AI 관련 필터링 키워드 (소문자)
 AI_KEYWORDS = [

@@ -68,7 +68,7 @@ def main():
 
         url = item.get("url", "")
         hn_url = f"https://news.ycombinator.com/item?id={item['id']}"
-        summary = get_summary(url)
+        summary = get_summary(url, title)
 
         news_item = {
             "id": item["id"],

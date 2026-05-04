@@ -19,7 +19,7 @@ def main():
 
     # 각 뉴스에 요약 추가
     for item in news[:15]:
-        item["summary"] = get_summary(item["url"])
+        item["summary"] = get_summary(item["url"], item["title"])
     print("  뉴스 요약 완료")
 
     trending = fetch_ai_trending()
